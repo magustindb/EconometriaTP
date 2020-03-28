@@ -1,0 +1,81 @@
+
+
+#librer?as que no se si usar?
+
+library(xlsx)
+
+
+
+#Elijo path en donde voy a trabajar
+setwd("C:/Users/User/Desktop/Econometria/TP1")
+
+
+#Defino los coeficientes
+b0=rep(300, 100)
+b1=1
+b2=1
+b3=-1
+
+#1) Creo 50 bases de datos
+for (i in 1:50){
+  set.seed(i)
+  u=rnorm(100, mean=0, sd=1600) 
+  x1 <- paste("x1", i, sep = "")
+  assign(x1, runif(100, 0, 100))
+  x2 <- paste("x2", i, sep = "")
+  assign(x2, runif(100, 0, 100))
+  x3 <- paste("x3", i, sep = "")
+  assign(x3, runif(100, 0, 100))
+  
+  set.seed(i)
+  u=rnorm(100, mean=0, sd=1600) 
+  x1 <-runif(100, 0, 100)
+  x2 <-runif(100,0,100)
+  x3 <-runif(100,0,100)
+  y <- paste("y", i, sep = "")
+  assign(y, b0+b1*x1+b2*x2+b3*x3+u)
+
+}
+#2)Pruebo correlaci?n entre Variables independientes
+#Base de dato seed 13
+cor(x113,x213)
+cor(x113,x313)
+cor(x313,x213)
+#Resultado: todas las correlaciones son bajas, debido a que las variables no guardan relaci?n
+
+
+#3) Estimo betas para 50 muestras
+for (i in 1:50){
+  set.seed(i)
+  u=rnorm(100, mean=0, sd=1600) 
+  x1 <-runif(100, 0, 100)
+  x2 <-runif(100,0,100)
+  x3 <-runif(100,0,100)
+  y  <- paste("y", i, sep = "")
+  assign(y, b0+b1*x1+b2*x2+b3*x3+u)
+  
+  assign(paste("m",i,sep=""), lm(y1~x1+x2+x3))
+  
+}
+
+#Guardo las estimaciones en un archivo de excel SEGUIR PROGRAMANDO
+write.xlsx(as.data.frame(m1), file = "resultados.xlsx"),
+m1=
+write_xlsx(m1, "prueba.xlsx")
+
+#data.frame
+iterations = 100
+variables = 3
+
+output <- matrix(ncol=variables, nrow=iterations)
+for(i in 1:iterations){
+  set.seed(i)         
+  output[i,] <- runif(3,0,100)
+  
+  
+}
+
+output
+output <- data.frame(output)
+
+
