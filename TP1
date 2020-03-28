@@ -63,19 +63,36 @@ write.xlsx(as.data.frame(m1), file = "resultados.xlsx"),
 m1=
 write_xlsx(m1, "prueba.xlsx")
 
-#data.frame
+#Parametros
+b0=rep(300, 100)
+b1=rep(1, 100)
+b2=rep(1, 100)
+b3=rep(-1, 100)
+
+#Variables indepedendientes
 iterations = 100
 variables = 3
 
-output <- matrix(ncol=variables, nrow=iterations)
+varx <- matrix(ncol=variables, nrow=iterations)
 for(i in 1:iterations){
   set.seed(i)         
-  output[i,] <- runif(3,0,100)
-  
-  
+  varx[i,] <- runif(3,0,100)
 }
 
-output
-output <- data.frame(output)
+varx
+varx <- data.frame(varx)
+
+#Errores
+
+errores <- matrix(ncol=1, nrow=iterations)
+for(i in 1:iterations){
+  set.seed(i)         
+  errores[i,] <- rnorm(1, mean=0, sd=1600)
+}
+errores <- data.frame(errores)
+
+varx <- varx %>% mutate(u=errores$errores)
+varx <- varx %>% mutate(b0=b0,b1=b1,b2=b2,b3=b3)
+varx <- varx %>% mutate(y=b0+b1*X1+b2*X2+b3*X3+u)
 
 
