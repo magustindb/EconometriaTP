@@ -1,0 +1,397 @@
+#Primer trabajo práctico econometría avanzada
+
+#Librerías
+install.packages('writexl', dependencies=TRUE, repos='http://cran.rstudio.com/')
+install.packages('readxl', dependencies=TRUE, repos='http://cran.rstudio.com/')
+
+library(writexl)
+library(readxl)
+
+#librerías que no se si usaré
+install.packages("rJava", dependencies=TRUE, repos='http://cran.rstudio.com/')
+library(xlsx)
+library("Hmisc")
+
+
+#Elijo path en donde voy a trabajar
+path="G:/Facultad/San andres/Econometría/Trabajo prácticos/TP 1"
+setwd(path)
+
+
+#Defino los coeficientes
+b0=rep(300, 100)
+b1=1
+b2=1
+b3=-1
+
+#1) Creo 50 bases de datos
+for (i in 1:50){
+  set.seed(i)
+  u=rnorm(100, mean=0, sd=40)  #El dato es de la varianza, por lo tanto saco raíz cuadrada
+  x1 <- paste("x1", i, sep = "")
+  assign(x1, runif(100, 0, 100))
+  x2 <- paste("x2", i, sep = "")
+  assign(x2, runif(100, 0, 100))
+  x3 <- paste("x3", i, sep = "")
+  assign(x3, runif(100, 0, 100))
+  x1<-get(paste("x1", i, sep = ""))
+  x2<-get(paste("x2", i, sep = ""))
+  x3<-get(paste("x3", i, sep = ""))
+  y <- paste("y", i, sep = "")
+  assign(y, b0+(b1*x1)+(b2*x2)+(b3*x3)+u)
+  
+}
+
+#Opcional (pasar observaciones a dataframe)----------------------
+#Convierto todas todas las observaciones en dataframe
+for (i in 1:50){ 
+  x1<-get(paste("x1", i,sep=""))
+  df<- data.frame(x1)
+  assign(paste("x1_df", i, sep = ""), df)
+
+  x2<-get(paste("x2", i,sep=""))
+  df<- data.frame(x2)
+  assign(paste("x2_df", i, sep = ""), df)
+
+  x3<-get(paste("x3", i,sep=""))
+  df<- data.frame(x3)
+  assign(paste("x3_df", i, sep = ""), df)
+
+  y<-get(paste("y", i,sep=""))
+  df<- data.frame(y)
+  assign(paste("y_df", i, sep = ""), df)
+}
+#Uno dataframes
+for (i in 1:50){
+  y<-get(paste("y_df", i,sep=""))
+  x1<-get(paste("x1_df", i,sep=""))
+  x2<-get(paste("x2_df", i,sep=""))
+  x3<-get(paste("x3_df", i,sep=""))
+  dataframe=cbind(y,x1,x2,x3)
+  dataframe <-data.frame(dataframe)
+  assign(paste("dataframem", i, sep = ""), dataframe)
+}
+
+
+lm(y~ x1+x2+x3, data=dataframem25)
+cor(dataframem25$y,dataframem25$x1)
+#--------------
+
+
+#2)Pruebo correlación entre Variables independientes
+#Base de dato seed 13
+cor(x113,x213)
+cor(x113,x313)
+cor(x313,x213)
+#Resultado: todas las correlaciones son bajas, debido a que las variables no guardan relación
+
+
+#3) Estimo betas para 50 muestras
+for (i in 1:50){
+  set.seed(i)
+  u=rnorm(100, mean=0, sd=40) 
+  x1 <-runif(100, 0, 100)
+  x2 <-runif(100,0,100)
+  x3 <-runif(100,0,100)
+  y  <- paste("y", i, sep = "")
+  assign(y, b0+b1*x1+b2*x2+b3*x3+u)
+  y <-get(paste("y",i,sep=""))
+  assign(paste("m",i,sep=""), lm(y~x1+x2+x3))
+  
+}
+
+
+#Alternativa: para estimar betas----------------------
+#for (i in 1:50){
+#set.seed(i)
+#u=rnorm(100, mean=0, sd=1600) 
+#x1 <- paste("x1", i, sep = "")
+#assign(x1, runif(100, 0, 100))
+#x2 <- paste("x2", i, sep = "")
+#assign(x2, runif(100, 0, 100))
+#x3 <- paste("x3", i, sep = "")
+#assign(x3, runif(100, 0, 100))
+
+
+#X_1<-get(paste("x1", i,sep=""))
+#X_2<-get(paste("x2", i,sep=""))
+#X_3<-get(paste("x3", i,sep=""))
+#y  <- paste("y", i, sep = "")
+#assign(y, b0+b1*X_1+b2*X_2+b3*X_3+u)
+#assign(paste("m",i,sep=""), lm(y1~X_1+X_2+X_3))
+#}
+#Fin de alternativa--------------------
+
+
+
+#Convierto todas las estimaciones en dataframes
+for (i in 1:50){ 
+m<-get(paste("m", i,sep=""))
+df<- summary(m)$coefficients #Solo importan los coeficientes
+df<- data.frame(df)
+df_limpio<- df[,-(2:4),drop=FALSE] #Quito columnas irrelevantes
+assign(paste("df", i, sep = ""), df_limpio)
+}
+#Uno todos los dataframes
+for (i in 1:49){ 
+  dataframe1<-get(paste("df", i,sep=""))
+  dataframe_t1<-as.data.frame(t(as.matrix(dataframe1)))  #Doy traspongo matrices y los vuelvo dataframes
+  if(i>1) {dataframe_t1<-total_df} 
+  dataframe2<-get(paste("df", i+1,sep=""))
+  dataframe_t2<-as.data.frame(t(as.matrix(dataframe2)))
+  total_df <- rbind(dataframe_t1,dataframe_t2) #Uno por fila.
+
+}
+total_df
+#Convierto en archivo excel:
+pathdf="G:/Facultad/San andres/Econometría/Trabajo prácticos/TP 1/primera_estimación.xlsx"
+write_xlsx(total_df,pathdf)
+total_df #Dataframe completo
+
+#4) Leo archivo excel
+
+read_xlsx(pathdf)
+df<-read_xlsx(pathdf)
+df
+#Comparo estimaciones
+# Gráfico de dispersión de la variables
+
+#Primero b1 sombrero contra b2 sombrero
+dfpairs1<-df
+dfpairs1$`(Intercept)` <- NULL  #Quito intercepto
+dfpairs1$x3 <- NULL #Quito columna de x3
+pairs(dfpairs1, col="blue") 
+?pairs
+#No parece haber nada de relación.
+
+#Ahora b1 sombrero contra b3 sombrero
+
+dfpairs2<-df
+dfpairs2$`(Intercept)` <- NULL #Quito intercepto
+dfpairs2$x2 <- NULL #Quito columna de x3
+pairs(dfpairs2, col="red")
+#Tampoco parece haber nada de relación
+
+#5) Creo una nueva base de datos con 2 variables altamente correlacionadas
+for (i in 1:50){
+  set.seed(i)
+  u=rnorm(100, mean=0, sd=40) 
+
+  x1 <- paste("x1", i, sep = "")
+  assign(x1, runif(100, 0, 100))
+  x2<-scale(matrix(rnorm(100), ncol=1))
+  x1<-get(paste("x1", i,sep=""))
+  xs<-cbind(scale(x1),x2)
+  c1 <-var(xs)
+  chol1<-solve(chol(c1))
+  newx <-xs
+  newc <- matrix(c(1,0.987,0.987,1), ncol=2)
+  eigen(newc)
+  chol2 <-chol(newc)
+  xm2 <-newx%*% chol2 *sd(x1) + mean(x1)
+  #x2 <-xm2[,2]
+  x2 <- paste("x2", i, sep = "")
+  assign(x2, xm2[,2])
+  x3 <- paste("x3", i, sep = "")
+  assign(x3, runif(100, 0, 100))
+  y  <- paste("y", i, sep = "")
+  x_1<-get(paste("x1", i,sep=""))
+  x_2<-get(paste("x2", i,sep=""))
+  x_3<-get(paste("x3", i,sep=""))
+  assign(y, b0+b1*x_1+b2*x_2+b3*x_3+u)
+  y<-get(paste("y",i,sep=""))
+  assign(paste("mm",i,sep=""), lm(y~x_1+x_2+x_3))
+}
+
+#Convierto todas las estimaciones en dataframes como antes.
+for (i in 1:50){ 
+  m<-get(paste("mm", i,sep=""))
+  df<- summary(m)$coefficients 
+  df<- data.frame(df)
+  df_limpio<- df[,-(2:4),drop=FALSE]
+  assign(paste("df", i, sep = ""), df_limpio)
+}
+
+
+#Uno todos los dataframes como antes.
+for (i in 1:49){ 
+  dataframe1<-get(paste("df", i,sep=""))
+  dataframe_t1<-as.data.frame(t(as.matrix(dataframe1))) 
+  if(i>1) {dataframe_t1<-total_df} 
+  dataframe2<-get(paste("df", i+1,sep=""))
+  dataframe_t2<-as.data.frame(t(as.matrix(dataframe2)))
+  total_df <- rbind(dataframe_t1,dataframe_t2)
+}
+
+#Convierto en archivo excel:
+pathdf="G:/Facultad/San andres/Econometría/Trabajo prácticos/TP 1/segunda_estimación.xlsx"
+write_xlsx(total_df,pathdf)
+
+#7) Leo archivo excel
+df<-read_xlsx(pathdf)
+df
+#Comparo estimaciones
+# Gráfico de dispersión de la variables
+
+#Primero b1 sombrero contra b2 sombrero
+dfpairs1<-df
+dfpairs1$`(Intercept)` <- NULL 
+dfpairs1$x_3 <- NULL
+pairs(dfpairs1, col="blue")
+#Están muy correlacionados, los estimadores no dejaron de ser MELI, no multicolinealidad perfecta
+#permite que los estimadores esten muy correlacionados, excepto que sea correlación=1
+
+
+#8) el problema es de multicolinealidad, genera mayor varianza en los estimadores y...
+#Comparemos varianza, por ejemplo los modelos con variables no corr.
+
+
+
+
+#Ejercicio 2------------------------------------------------------------------
+
+#Misma base de datos que antes:
+for (i in 1:50){
+  set.seed(i)
+  u=rnorm(100, mean=0, sd=40) 
+  x1 <- paste("x1", i, sep = "")
+  assign(x1, runif(100, 0, 100))
+  x2 <- paste("x2", i, sep = "")
+  assign(x2, runif(100, 0, 100))
+  x3 <- paste("x3", i, sep = "")
+  assign(x3, runif(100, 0, 100))
+  
+  
+  X_1<-get(paste("x1", i,sep=""))
+  X_2<-get(paste("x2", i,sep=""))
+  X_3<-get(paste("x3", i,sep=""))
+  y  <- paste("y", i, sep = "")
+  assign(y, b0+b1*X_1+b2*X_2+b3*X_3+u)
+  y<-get(paste("y",i,sep=""))
+  assign(paste("M",i,sep=""), lm(y~X_1+X_3)) #Ahora estimo un modelo diferente
+}
+
+
+
+
+
+#Convierto todas las estimaciones en dataframes
+for (i in 1:50){ 
+  m<-get(paste("M", i,sep=""))
+  df<- summary(m)$coefficients 
+  df<- data.frame(df)
+  df_limpio<- df[,-(2:4),drop=FALSE]
+  assign(paste("df", i, sep = ""), df_limpio)
+}
+#Uno todos los dataframes
+for (i in 1:49){ 
+  dataframe1<-get(paste("df", i,sep=""))
+  dataframe_t1<-as.data.frame(t(as.matrix(dataframe1))) 
+  if(i>1) {dataframe_t1<-total_df} 
+  dataframe2<-get(paste("df", i+1,sep=""))
+  dataframe_t2<-as.data.frame(t(as.matrix(dataframe2)))
+  total_df <- rbind(dataframe_t1,dataframe_t2)
+  
+}
+total_df
+#Convierto en archivo excel:
+pathdf="G:/Facultad/San andres/Econometría/Trabajo prácticos/TP 1/tercera_estimación.xlsx"
+write_xlsx(total_df,pathdf)
+
+
+#4) Leo archivo excel
+
+read_xlsx(pathdf)
+df<-read_xlsx(pathdf)
+df
+
+#Grafico b1 contra b3 
+dfpairs1<-df
+dfpairs1$`(Intercept)` <- NULL 
+dfpairs1$X_2 <- NULL
+pairs(dfpairs1, col="red")
+#No parece haber nada de relación. 
+#No hay problema de sesgo porque x2 no esta correlacionada ni con x1 ni con x3. 
+#Tampoco hay problema en la varianza de los estimadores por ausencia de 
+#correlación entre las variables explicativas
+
+#2) De nuevo utilizo la base de datos con 2 variables altamente correlacionadas
+for (i in 1:50){
+  set.seed(i)
+  u=rnorm(100, mean=0, sd=40) 
+  
+  x1 <- paste("x1", i, sep = "")
+  assign(x1, runif(100, 0, 100))
+  x2<-scale(matrix(rnorm(100), ncol=1))
+  x1<-get(paste("x1", i,sep=""))
+  xs<-cbind(scale(x1),x2)
+  c1 <-var(xs)
+  chol1<-solve(chol(c1))
+  newx <-xs
+  newc <- matrix(c(1,0.987,0.987,1), ncol=2)
+  eigen(newc)
+  chol2 <-chol(newc)
+  xm2 <-newx%*% chol2 *sd(x1) + mean(x1)
+  #x2 <-xm2[,2]
+  x2 <- paste("x2", i, sep = "")
+  assign(x2, xm2[,2])
+  x3 <- paste("x3", i, sep = "")
+  assign(x3, runif(100, 0, 100))
+  y  <- paste("y", i, sep = "")
+  x_1<-get(paste("x1", i,sep=""))
+  x_2<-get(paste("x2", i,sep=""))
+  x_3<-get(paste("x3", i,sep=""))
+  assign(y, b0+b1*x_1+b2*x_2+b3*x_3+u)
+  y<- get(paste("y",i,sep=""))
+  assign(paste("mm",i,sep=""), lm(y~x_1+x_3)) #estimo un modelo diferente al del primer ejercicio.
+}
+
+
+#Convierto todas las estimaciones en dataframes
+for (i in 1:50){ 
+  m<-get(paste("mm", i,sep=""))
+  df<- summary(m)$coefficients 
+  df<- data.frame(df)
+  df_limpio<- df[,-(2:4),drop=FALSE]
+  assign(paste("df", i, sep = ""), df_limpio)
+}
+
+#Uno todos los dataframes
+for (i in 1:49){ 
+  dataframe1<-get(paste("df", i,sep=""))
+  dataframe_t1<-as.data.frame(t(as.matrix(dataframe1))) 
+  if(i>1) {dataframe_t1<-total_df} 
+  dataframe2<-get(paste("df", i+1,sep=""))
+  dataframe_t2<-as.data.frame(t(as.matrix(dataframe2)))
+  total_df <- rbind(dataframe_t1,dataframe_t2)
+  
+}
+total_df
+#Convierto en archivo excel:
+pathdf="G:/Facultad/San andres/Econometría/Trabajo prácticos/TP 1/cuarta_estimación.xlsx"
+write_xlsx(total_df,pathdf)
+total_df
+
+#4) Leo archivo excel
+
+read_xlsx(pathdf)
+df<-read_xlsx(pathdf)
+df
+
+#Comparo estimaciones
+# Gráfico de dispersión de la variables
+
+#Primero b1 sombrero contra b2 sombrero
+dfpairs1<-df
+dfpairs1$`(Intercept)` <- NULL 
+pairs(dfpairs1, col="blue")
+#No parece haber nada de relación.
+#Justamente porque estas variables no están correlacionadas
+#Habrá sesgo, porque x2 esta corr. con y (es relevante) pero además corr. con
+#variables explicativas.
+cor(y2,x22)
+#No va a haber mucha varianza (modelo chico -> menos varianza)
+#Se puede apreciar el tradeoff sesgo-varianza
+
+
+
